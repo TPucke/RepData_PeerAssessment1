@@ -8,7 +8,7 @@ output:
 
 ## Loading and preprocessing the data
 
-The "activity.csv" file is located in the same folder as this Rmd file, so no path is specified beyond the file name. 
+After the csv file is extracted from the zip, the data is read to a data.frame and the unzipped file is removed, to prevent committing an unneeded leftover file to github. 
 
 
 ```{r,echo = TRUE, results='hide'}
@@ -26,7 +26,7 @@ hist(dailysums, breaks = 50)
 print(paste("The mean total number of steps taken per day is", round(mean(dailysums), 1)))
 print(paste("The median total number of steps taken per day is", median(dailysums)))
 ```
-Alternatively, the better looking way to do this (but not echo code) is:
+Alternatively, the better looking way to do this (but it does not echo code) is:
 
 The mean total number of steps taken per day is `r round(mean(dailysums), 1)`  
 The median total number of steps taken per day is `r median(dailysums)`
