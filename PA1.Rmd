@@ -1,0 +1,53 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+The "activity.csv" file is located in the same folder as this Rmd file, so no path is specified beyond the file name. 
+
+
+```{r,echo = TRUE, results='hide'}
+unzippeddatafile <- unzip("activity.zip")
+data <- read.csv(file = unzippeddatafile)
+file.remove(unzippeddatafile)
+```
+
+
+## What is mean total number of steps taken per day?
+
+```{r}
+dailysums <- tapply(data$steps, data$date, sum, na.rm = TRUE)
+hist(dailysums, breaks = 50)
+print(paste("The mean total number of steps taken per day is", round(mean(dailysums), 1)))
+print(paste("The median total number of steps taken per day is", median(dailysums)))
+```
+Alternatively, the better looking way to do this (but not echo code) is:
+
+The mean total number of steps taken per day is `r round(mean(dailysums), 1)`  
+The median total number of steps taken per day is `r median(dailysums)`
+
+
+## What is the average daily activity pattern?
+
+```{r}
+
+```
+
+
+## Imputing missing values
+
+```{r}
+
+```
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+
+```
