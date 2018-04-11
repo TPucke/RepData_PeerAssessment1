@@ -8,36 +8,57 @@ output:
 
 ## Loading and preprocessing the data
 
-After the csv file is extracted from the zip, the data is read to a data.frame and the unzipped file is removed, to prevent committing an unneeded leftover file to github. 
+After the csv file is extracted from the zip, the data is read to a data.frame and the unzipped file is removed, to prevent committing an unneeded leftover file to github.  A fraction form of the time of day is calculated to facilitate accurate plotting. 
 
 
 ```{r,echo = TRUE, results='hide'}
-unzippeddatafile <- unzip("activity.zip")
-data <- read.csv(file = unzippeddatafile)
-file.remove(unzippeddatafile)
+library(dplyr)
+unzipped.data.file <- unzip("activity.zip")
+data <- read.csv(file = unzipped.data.file)
+file.remove(unzipped.data.file)
+rm(unzipped.data.file)
 ```
 
 
 ## What is mean total number of steps taken per day?
 
 ```{r}
-dailysums <- tapply(data$steps, data$date, sum, na.rm = TRUE)
-hist(dailysums, breaks = 50)
-print(paste("The mean total number of steps taken per day is", round(mean(dailysums), 1)))
-print(paste("The median total number of steps taken per day is", median(dailysums)))
+dailytotals <- tapply(data$steps, data$date, sum, na.rm = TRUE)
+hist(dailytotals, breaks = 50)
+print(paste("The mean total number of steps taken per day is", round(mean(dailytotals), 1)))
+print(paste("The median total number of steps taken per day is", median(dailytotals)))
 ```
 Alternatively, the better looking way to do this (but it does not echo code) is:
 
-The mean total number of steps taken per day is `r round(mean(dailysums), 1)`  
-The median total number of steps taken per day is `r median(dailysums)`
+The mean total number of steps taken per day is `r round(mean(dailytotals), 1)`  
+The median total number of steps taken per day is `r median(dailytotals)`
 
 
 ## What is the average daily activity pattern?
 
-```{r}
+```{r,fig.width=8}
+intervaltotals <- tapply(data$steps, data$interval, mean, na.rm = TRUE)
+interval.df <- data.frame(Time = as.numeric(names(intervaltotals)), 
+                         Steps = intervaltotals)
 
+interval.df <- mutate(interval.df, decimal.hour = floor(Time / 100) + (Time %% 100) / 60)
+peak.interval <- which.max(interval.df$Steps)
+
+plot(x = interval.df$decimal.hour, 
+     y = interval.df$Steps, 
+     type = "l",
+     ylab = "Steps Taken",
+     xlab = "Time Of Day",
+     main = "Mean Of Steps Taken Per 5 Minute Interval\nOver The Entire Measurement Period",
+     xaxt = "n")
+axis(side = 1,
+     at = seq.int(0, 24, by = 2),
+     labels = seq.int(0, 24, by = 2))
+grid(ny = NULL)
+temp <- lapply(seq.int(0, 24), function(x) abline(v=x, col = "lightgray", lty = "dotted"))
+
+print(paste("The time interval with the highest average step count is", interval.df$Time[peak.interval]))
 ```
-
 
 ## Imputing missing values
 
