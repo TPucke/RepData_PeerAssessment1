@@ -11,7 +11,8 @@ output:
 After the csv file is extracted from the zip, the data is read to a data.frame named `data` and the unzipped file is removed, to prevent committing an unneeded leftover file to github.  A fraction form of the time of day is calculated to facilitate accurate plotting. 
 
 
-```{r,echo = TRUE, results='hide'}
+
+```r
 library(tidyr, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
@@ -24,21 +25,39 @@ rm(unzipped.data.file)
 
 ## What is mean total number of steps taken per day?
 
-```{r}
+
+```r
 dailytotals <- tapply(data$steps, data$date, sum, na.rm = TRUE)
 hist(dailytotals, breaks = 50)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
 print(paste("The mean total number of steps taken per day is", round(mean(dailytotals), 1)))
+```
+
+```
+## [1] "The mean total number of steps taken per day is 9354.2"
+```
+
+```r
 print(paste("The median total number of steps taken per day is", median(dailytotals)))
+```
+
+```
+## [1] "The median total number of steps taken per day is 10395"
 ```
 Alternatively, the better looking way to do this (but it does not echo code) is:
 
-The mean total number of steps taken per day is `r round(mean(dailytotals), 1)`  
-The median total number of steps taken per day is `r median(dailytotals)`
+The mean total number of steps taken per day is 9354.2  
+The median total number of steps taken per day is 10395
 
 
 ## What is the average daily activity pattern?
 
-```{r,fig.width=8}
+
+```r
 intervaltotals <- tapply(data$steps, data$interval, mean, na.rm = TRUE)
 interval.df <- data.frame(interval = as.integer(names(intervaltotals)), 
                          Steps = intervaltotals)
@@ -58,15 +77,24 @@ axis(side = 1,
      labels = seq.int(0, 24, by = 2))
 grid(ny = NULL)
 dummy <- lapply(seq.int(0, 24), function(x) abline(v=x, col = "lightgray", lty = "dotted"))
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 print(paste("The time interval with the highest average step count is", interval.df$interval[peak.interval]))
+```
+
+```
+## [1] "The time interval with the highest average step count is 835"
 ```
 
 ## Imputing missing values
 
-The data contains `r sum(is.na(data$steps))` unknown values.  These values will be replaced with the mean number of steps reported for the same time interval on other days in the measurement period.  
+The data contains 2304 unknown values.  These values will be replaced with the mean number of steps reported for the same time interval on other days in the measurement period.  
 
-```{r}
+
+```r
 na.indexes <- which(is.na(data$steps))
 
 # generate the imputed data.frame
@@ -81,23 +109,52 @@ for (r in 1:nrow(imputed.df)) {
 
 dailytotals <- tapply(imputed.df$steps, imputed.df$date, sum)
 hist(dailytotals, breaks = 50)
-print(paste("The mean total number of steps taken per day is", round(mean(dailytotals), 1)))
-print(paste("The median total number of steps taken per day is", median(dailytotals)))
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
+print(paste("The mean total number of steps taken per day is", round(mean(dailytotals), 1)))
+```
+
+```
+## [1] "The mean total number of steps taken per day is 10766.2"
+```
+
+```r
+print(paste("The median total number of steps taken per day is", median(dailytotals)))
+```
+
+```
+## [1] "The median total number of steps taken per day is 10766.1886792453"
 ```
 These values are higher than the previously calculated totals that don't include imputed data.  This is reasonable in that a significant number of missing measurements have been imputed with positive step counts, and so the overall total number of countable steps is increased, bringing a corresponding increase to both indicators of daily average. 
 
 The mean total is affected more than the median, which also is reasonably explained.  Missing measurements in the original data have a direct effect on the mean by lowering the overall sum of all countable steps, whereas the median total is less impacted because it is chosen from among a group of typical days with actual measured step counts.  A majority of reported days are not impacted by missing numbers. 
 
 The identical values of the mean and median daily step totals may at first seem surprising, but this too has a reasonable explanation.  There are a number of days in the original data with no available step counts for any time interval.  When imputing those missing values with the mean of all reported values for matching time intervals of other days, we create days that have total step counts equal to the mean daily total for the days with reported numbers.  The likelihood of a day with all imputed step counts representing the median of all days increases with the number of such days (there are 8 out of a total of 61 reported days).  This effect is observed by listing all daily totals in ascending order for the imputed data as follows:
-```{r}
+
+```r
 as.vector(dailytotals[order(dailytotals)])
+```
+
+```
+##  [1]    41.00   126.00  2492.00  3219.00  4472.00  5018.00  5441.00
+##  [8]  6778.00  7047.00  7336.00  8334.00  8355.00  8821.00  8841.00
+## [15]  8918.00  9819.00  9900.00 10056.00 10119.00 10139.00 10183.00
+## [22] 10304.00 10395.00 10439.00 10571.00 10600.00 10765.00 10766.19
+## [29] 10766.19 10766.19 10766.19 10766.19 10766.19 10766.19 10766.19
+## [36] 11015.00 11162.00 11352.00 11458.00 11829.00 11834.00 12116.00
+## [43] 12426.00 12608.00 12787.00 12811.00 12883.00 13294.00 13452.00
+## [50] 13460.00 13646.00 14339.00 14478.00 15084.00 15098.00 15110.00
+## [57] 15414.00 15420.00 17382.00 20427.00 21194.00
 ```
 Note that the indexes range from 1 to 61 so the median value is to be found at index 31, which is 10766.19, the same as the mean over all days.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
 daytype <- sapply(imputed.df$date, function(x) {
     d <- as.Date(x)
     w <- weekdays(d)
@@ -133,8 +190,10 @@ p <- ggplot(data = x, aes(x = decimal.hour, y = mean.steps)) +
      geom_line() + 
      facet_grid( daytype ~ .) + 
      facet_grid( daytype ~ .) +
-     labs(x = "Hour of the Day", y = "Steps per 5 Minute Interval", title = "Comparison of Weekdays and Weekends") +
+     labs(x = "Hour of Day", y = "Steps per 5 Minute Interval", title = "Mean Steps\nWeekdays vs. Weekends") +
      scale_x_continuous(breaks = seq(0, 24, by=2))
 print(p)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
